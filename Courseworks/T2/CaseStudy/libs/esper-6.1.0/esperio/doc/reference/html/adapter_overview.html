@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory">Chapter 1. Adapter Overview</title><link rel="stylesheet" href="css/espertech.css" type="text/css"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" name="generator" content="DocBook XSL-NS Stylesheets V1.74.0"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" http-equiv="Content-Type" content="text/html; charset=UTF-8"/><link rel="home" href="index.html" title="EsperIO Reference"/><link rel="up" href="index.html" title="EsperIO Reference"/><link rel="prev" href="preface.html" title="Preface"/><link rel="next" href="adapter_file.html" title="Chapter 2. The File and CSV Input and Output Adapter"/></head><body><p xmlns:d="http://docbook.org/ns/docbook" id="title"><a href="http://www.espertech.com" class="site_href"><strong>www.espertech.com</strong></a><a href="http://www.espertech.com/esper/documentation.php" class="doc_href"><strong>Documentation</strong></a></p><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="preface.html"><strong>Prev</strong></a></li><li class="next"><a accesskey="n" href="adapter_file.html"><strong>Next</strong></a></li></ul><div class="chapter" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="adapter_overview"/>Chapter 1. Adapter Overview</h2></div></div></div><div class="toc"><dl><dt><span class="sect1"><a href="adapter_overview.html#adapter-inputadapter">1.1. The Adapter Interface</a></span></dt></dl></div><p>
+        Input and output adapters to Esper provide the means of accepting events from various sources, and for making available events to destinations.
+    </p><div xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="note"><h2>Note</h2><p>
+			Esper has a fully-evolved API and natively accepts various input event formats and natively produces various output event objects, as part of core Esper.
+		</p><p>
+			It is therefore not necessary to use any of the adapters listed herein. Simply use the public Esper APIs directly in your code.
+		</p></div><p>
+        Most adapters present their own configuration as well as API. Some adapters also provide operators for use in data flows.
+    </p><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="adapter-inputadapter"/>1.1. The Adapter Interface</h2></div></div></div><p>
+				The <code class="literal">Adapter</code> interface allows client applications to control the state of an input and output adapter. It provides state transition methods that each
+				input and output adapter implements. 
+		</p><p>
+				An input or output adapter is always in one of the following states:
+		</p><div class="itemizedlist"><ul compact="compact"><li><p>
+					Opened - The begin state; The adapter is not generating or accepting events in this state
+				</p></li><li><p>
+					Started - When the adapter is active, generating and accepting events
+				</p></li><li><p>
+					Paused - When operation of the adapter is suspended
+				</p></li><li><p>
+					Destroyed
+				</p></li></ul></div><p>
+				The state transition table below outlines adapter states and, for each state, the valid state transitions:
+		</p><div class="table"><a id="adapter-states"/><p class="title"><b>Table 1.1. Adapter State Transitions</b></p><div class="table-contents"><table summary="Adapter State Transitions" border="1"><colgroup><col/><col/><col/></colgroup><thead><tr><th>Start State</th><th>Method</th><th>Next State</th></tr></thead><tbody><tr><td>Opened</td><td>start()</td><td>Started</td></tr><tr><td>Opened</td><td>destroy()</td><td>Destroyed</td></tr><tr><td>Started</td><td>stop()</td><td>Opened</td></tr><tr><td>Started</td><td>pause()</td><td>Paused</td></tr><tr><td>Started</td><td>destroy()</td><td>Destroyed</td></tr><tr><td>Paused</td><td>resume()</td><td>Started</td></tr><tr><td>Paused</td><td>stop()</td><td>Opened</td></tr><tr><td>Paused</td><td>destroy()</td><td>Destroyed</td></tr></tbody></table></div></div><br class="table-break"/></div></div><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="preface.html"><strong>Prev</strong>Preface</a></li><li class="up"><a accesskey="u" href="#"><strong>Top of page</strong></a></li><li class="home"><a accesskey="h" href="index.html"><strong>Front page</strong></a></li><li class="next"><a accesskey="n" href="adapter_file.html"><strong>Next</strong>Chapter 2. The File and CSV Input and Output Adap...</a></li></ul></body></html>

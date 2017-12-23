@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory">Appendix F. Event Representation: Avro Events (org.apache.avro.generic.GenericData.Record)</title><link rel="stylesheet" href="css/espertech.css" type="text/css"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" name="generator" content="DocBook XSL-NS Stylesheets V1.74.0"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" http-equiv="Content-Type" content="text/html; charset=UTF-8"/><link rel="home" href="index.html" title="Esper Reference"/><link rel="up" href="index.html" title="Esper Reference"/><link rel="prev" href="appendix_eventrepoa.html" title="Appendix E. Event Representation: Object-array (Object[]) Events"/><link rel="next" href="appendix_eventrepxml.html" title="Appendix G. Event Representation: org.w3c.dom.Node XML Events"/></head><body><p xmlns:d="http://docbook.org/ns/docbook" id="title"><a href="http://www.espertech.com" class="site_href"><strong>www.espertech.com</strong></a><a href="http://www.espertech.com/esper/documentation.php" class="doc_href"><strong>Documentation</strong></a></p><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_eventrepoa.html"><strong>Prev</strong></a></li><li class="next"><a accesskey="n" href="appendix_eventrepxml.html"><strong>Next</strong></a></li></ul><div class="appendix" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro"/>Appendix F. Event Representation: Avro Events (<code class="literal">org.apache.avro.generic.GenericData.Record)</code></h2></div></div></div><a id="d0e53257" class="indexterm"/><a id="d0e53260" class="indexterm"/><p>
+		This section provides information for using Avro to represent events. 
+    </p><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_overview"/>F.1. Overview</h2></div></div></div><p>
+			An event can be represented by an Avro <code class="literal">GenericData.Record</code> instance. Event properties of Avro events are the field values of a <code class="literal">GenericData.Record</code>. The top level schema must always be a record.
+		</p><p>
+			The advantages for supporting Avro as an event representation are:
+		</p><div class="itemizedlist"><ul><li><p>Avro has excellent support for JSON, allowing JSON for incoming and outgoing events, while not compromising on type-safety since Avro provides a schema.</p></li><li><p>Avro has rich, extensible, standardized schema language defined in pure JSON; event types / schemas can be defined/imported/exported with EPL or from external sources.</p></li><li><p>Avro offers a compact binary representation and is thus efficient and fast for use with EsperHA persistence or for input/output in wire transfer.</p></li><li><p>Avro has a compact event representation reducing memory use, as each event is only a schema-reference and an Object[] (see GenericData.Record).</p></li><li><p>JSON itself is not memory efficient while Avro is: JSON repeats every field name with every single record and JSON alone is inefficient for high-volume usage.</p></li><li><p>Avro allows fast access to event properties since reading an event property value only requires reading the GenericData.Record-internal object-array at a given index.</p></li><li><p>Avro has bindings for a wide variety of programming languages and platforms and has RPC and file representations.</p></li><li><p>Avro does not require code generation so EPL can be written generically for any data stream. Type information can be made available at runtime while still providing type-safety.
+				There is no need to generate code, therefore there is no need to manage generated classes, or to reload classes or to restart the process to reload classes.</p></li><li><p>Avro has the notion of schema compatibility for evolving your event data over time.</p></li></ul></div><p>
+			Similar to the Map and object-array event type, the Avro event type takes part in the comprehensive type system that can eliminate the need to use Java classes as event types, thereby making it easier to change types at runtime or generate or import/export type information from/to another source/destination.
+		</p><p>
+			The engine can process Avro's <code class="literal">GenericData.Record</code> events via the <code class="literal">sendEventAvro(Object avroGenericDataDotRecord, String avroEventTypeName)</code> method on the <code class="literal">EPRuntime</code> interface.
+		</p><p>
+			The engine does not validate Avro events. Your application must ensure that Avro values match the declaration of the schema and that the schema of the event matches the schema declared for the event type of the event.
+		</p><p>
+			A given Avro event type can have only a single supertype that must also be an Avro event type. All properties available on the Avro supertype is also available on the type itself. In addition, anywhere within EPL that an event type name of an Avro supertype is used, the Avro subtype and the subtype of the subtype match that expression.
+			Note that access to properties is by field position thereby subtype and supertype field positions should be congruent.
+		</p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_properties"/>F.2. Avro Event Type</h2></div></div></div><p>
+			In order to use Avro for incoming events, the event type name and Avro schema must be made known to the engine via configuration or <code class="literal">create avro schema</code> EPL syntax. Please see examples in <a class="xref" href="epl_clauses.html#epl_createschema" title="5.15. Declaring an Event Type: Create Schema">Section 5.15, “Declaring an Event Type: Create Schema”</a> and <a class="xref" href="configuration.html#config-avro" title="17.4.4. Events represented by Avro GenericData.Record">Section 17.4.4, “Events represented by Avro GenericData.Record”</a>.
+		</p><p>
+			The code snippet below defines an Avro event type, creates an Avro event and sends the event into the engine. The sample defines the <code class="literal">CarLocUpdateEvent</code> event type via the runtime configuration interface (<code class="literal">create schema</code> or static configuration could have been used instead).
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">// Define CarLocUpdateEvent event type (example for runtime-configuration interface)
+Schema schema = record("CarLocUpdateEvent").fields()
+  .name("carId").type().stringBuilder().prop(PROP_JAVA_STRING_KEY, PROP_JAVA_STRING_VALUE).endString().noDefault()
+  .requiredInt("direction")
+  .endRecord();
+ConfigurationEventTypeAvro avroEvent = new ConfigurationEventTypeAvro(schema);
+epService.getEPAdministrator().getConfiguration().addEventTypeAvro("CarLocUpdateEvent", avroEvent);</pre><p>
+			The <code class="literal">CarLocUpdateEvent</code> can now be used in a statement:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select count(*) from CarLocUpdateEvent(direction = 1)#time(1 min)</pre><p>
+			The sample code to send an event is:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">GenericData.Record event = new GenericData.Record(schema);
+event.put("carId", "A123456");
+event.put("direction", 1);
+epService.getEPRuntime().sendEventAvro(event, "CarLocUpdateEvent");</pre><p>
+			Use the <code class="literal">@EventRepresentation(avro)</code> annotation to obtain Avro output events.
+		</p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_schemanamerequirement"/>F.3. Avro Schema Name Requirement</h2></div></div></div><p>
+			Avro schemas can contain further Avro schemas. The engine tracks nested schema based on the schema name. The engine implicitly registers an event type for each schema using the schema name, for nested simple and indexed properties.
+			Therefore the engine requires schema names to match the initially-registered schema of the same name. 
+		</p><p>
+			For example, the schema:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{
+  "type" : "record",
+  "name" : "MyEvent",
+  "fields" : [ {
+    "name" : "nested",
+    "type" : {
+      "type" : "record",
+      "name" : "MyNestedEvent",
+      "fields" : [ {
+        "name" : "value",
+        "type" : "int"
+      } ]
+    }
+  } ]
+}</pre><p>
+			For the above schema, upon registration of the schema as an event type, the engine creates an event type <code class="literal">MyNestedEvent</code> and associates it to the <code class="literal">MyNestedEvent</code> schema.
+		</p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_schematoprop"/>F.4. Avro Field Schema to Property Type Mapping</h2></div></div></div><p>
+			Upon registering an Avro event type, the engine determines property names and property types.
+			The Avro record field schema determines the property type.
+	   </p><p>
+		   The table below describes Avro field schema to property type mapping:
+	   </p><div class="table"><a id="d0e53387"/><p class="title"><b>Table F.1. Avro Field Schema to Property Type Mapping</b></p><div class="table-contents"><table summary="Avro Field Schema to Property Type Mapping" border="1"><colgroup><col/><col/></colgroup><thead><tr><th>Schema</th><th>Property Type</th></tr></thead><tbody><tr><td><code class="literal">"int"</code> (Schema.Type.INT)</td><td><code class="literal">int</code></td></tr><tr><td><code class="literal">"long"</code> (Schema.Type.LONG)</td><td><code class="literal">long</code></td></tr><tr><td><code class="literal">"double"</code> (Schema.Type.DOUBLE)</td><td><code class="literal">double</code></td></tr><tr><td><code class="literal">"float"</code> (Schema.Type.FLOAT)</td><td><code class="literal">float</code></td></tr><tr><td><code class="literal">"boolean"</code> (Schema.Type.BOOLEAN)</td><td><code class="literal">boolean</code></td></tr><tr><td><code class="literal">"bytes"</code> (Schema.Type.BYTES)</td><td><code class="literal">ByteBuffer</code></td></tr><tr><td><code class="literal">"null"</code> (Schema.Type.NULL)</td><td><code class="literal">null</code></td></tr><tr><td><code class="literal">"string"</code> (Schema.Type.STRING)</td><td>
+							<p>
+								If the field has the property <code class="literal">avro.java.string</code> as <code class="literal">String</code>, then the property type is <code class="literal">String</code> otherwise it is <code class="literal">CharSequence</code>.
+							</p>
+						</td></tr><tr><td><code class="literal">"union"</code> (Schema.Type.UNION)</td><td>See below.</td></tr><tr><td><code class="literal">"array"</code> (Schema.Type.ARRAY)</td><td><code class="literal">java.util.Collection</code></td></tr><tr><td><code class="literal">"map"</code> (Schema.Type.MAP)</td><td><code class="literal">java.util.Map</code></td></tr><tr><td><code class="literal">"record"</code> (Schema.Type.RECORD)</td><td><code class="literal">GenericData.Record</code></td></tr><tr><td><code class="literal">"fixed"</code> (Schema.Type.FIXED)</td><td><code class="literal">GenericFixed</code></td></tr><tr><td><code class="literal">"enum"</code> (Schema.Type.ENUM)</td><td><code class="literal">GenericEnumSymbol</code></td></tr></tbody></table></div></div><br class="table-break"/><p>
+			For unions: 
+		</p><div xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="orderedlist"><ol><li><p>
+					If the union contains <code class="literal">null</code> and any of the primitive types, the property type is the boxed type. For example <code class="literal">unionOf().nullType().and().intType().endUnion()</code> is <code class="literal">Integer.class</code>.
+				</p></li><li><p>
+					If the union contains <code class="literal">null</code> and numeric types only, the property type is <code class="literal">Number.class</code>. For example <code class="literal">unionOf().longType().and().intType().endUnion()</code> is <code class="literal">Number.class</code>.
+				</p></li><li><p>
+					Otherwise the property type is <code class="literal">Object.class</code>.
+				</p></li></ol></div></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_typetoschema"/>F.5. Primitive Data Type and Class to Avro Schema Mapping</h2></div></div></div><p>
+			This section lists for each JVM type the default Avro schema that the engine uses when assembling an Avro schema from a <code class="literal">select</code>-clause.
+	   </p><p>
+			For example, consider the following EPL statement. The statement assumes that <code class="literal">MyEvent</code> is a pre-registered event type of any kind (Map, Avro, Object-Array, POJO etc.):
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">@EventRepresentation(avro) select 1 as carId, 'abc' as carType from MyEvent</pre><p>
+			Your application may obtain the schema for the statement output event type as follows:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">String epl = "@EventRepresentation(avro) select 1 as carId, 'abc' as carType from MyEvent";
+EPStatement stmt = epService.getEPAdministrator().createEPL(epl);
+Schema schema = (Schema) ((AvroSchemaEventType) stmt.getEventType()).getSchema();</pre><p>
+			The engine generates an Avro schema based on the expressions in the <code class="literal">select</code>-clause. The schema in pretty-print may look like this:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{
+  "type" : "record",
+  "name" : "anonymous_1_result_",
+  "fields" : [ {
+    "name" : "carId",
+    "type" : "int"
+  }, {
+    "name" : "carType",
+    "type" : {
+      "type" : "string",
+      "avro.java.string" : "String"
+    }
+  } ]
+}</pre><p>
+			Please consult <a class="xref" href="configuration.html#config-engine-eventmeta-avro" title="17.4.13.2. Avro Settings">Section 17.4.13.2, “Avro Settings”</a> for details on controlling default mapping.
+			Tables below outline the default mapping and provide alternative schemas depending on the avro settings .
+		</p><p>
+			By default the engine maps expression result types to Avro schema using non-null schema types. 
+			By default, for String-type values, the engine sets the <code class="literal">avro.java.string</code> property to <code class="literal">String</code> to ensure that Avro uses <code class="literal">java.lang.String</code> to represent strings (and not <code class="literal">org.apache.avro.util.Utf8</code>).
+			The tables below outline the default mapping and provide alternative schemas, which apply according to Esper Avro settings.
+		</p><p>
+			The mapping from primitive and string type to Avro schema is:
+		</p><div class="table"><a id="d0e53607"/><p class="title"><b>Table F.2. Primitive Data Type and String Mapping</b></p><div class="table-contents"><table summary="Primitive Data Type and String Mapping" border="1"><colgroup><col/><col/><col/></colgroup><thead><tr><th>Type</th><th>Default Schema</th><th>Alternative Schemas</th></tr></thead><tbody><tr><td>byte</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"int"</pre></td><td>N/A</td></tr><tr><td>java.lang.Byte</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"int"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","int"]</pre></td></tr><tr><td>boolean</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"boolean"</pre></td><td>N/A</td></tr><tr><td>java.lang.Boolean</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"boolean"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","boolean"]</pre></td></tr><tr><td>double</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"double"</pre></td><td>N/A</td></tr><tr><td>java.lang.Double</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"double"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","double"]</pre></td></tr><tr><td>float</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"float"</pre></td><td>N/A</td></tr><tr><td>java.lang.Float</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"float"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","float"]</pre></td></tr><tr><td>int</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"int"</pre></td><td>N/A</td></tr><tr><td>java.lang.Integer</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"int"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","int"]</pre></td></tr><tr><td>long</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"long"</pre></td><td>N/A</td></tr><tr><td>java.lang.Long</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"long"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","long"]</pre></td></tr><tr><td>null</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"null"</pre></td><td>N/A</td></tr><tr><td>java.lang.String and java.lang.CharSequence</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"string","avro.java.string":"String"}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"string"</pre> or <pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","string"]</pre> or <pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"string","avro.java.string":"String"}]</pre></td></tr></tbody></table></div></div><br class="table-break"/><p>
+			The mapping from array-type to Avro schema is:
+		</p><div class="table"><a id="d0e53750"/><p class="title"><b>Table F.3. Array Type Mapping</b></p><div class="table-contents"><table summary="Array Type Mapping" border="1"><colgroup><col/><col/><col/></colgroup><thead><tr><th>Type</th><th>Default Schema</th><th>Alternative Schemas</th></tr></thead><tbody><tr><td>byte[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">"bytes"</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null","bytes"]</pre></td></tr><tr><td>Byte[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":["null","int"]}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":["null","int"]}]</pre></td></tr><tr><td>boolean[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":"boolean"}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":"boolean"}]</pre></td></tr><tr><td>Boolean[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":["null","boolean"]}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":["null","boolean"]}]</pre></td></tr><tr><td>double[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":"double"}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":"double"}]</pre></td></tr><tr><td>Double[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":["null","double"]}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":["null","double"]}]</pre></td></tr><tr><td>float[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":"float"}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":"float"}]</pre></td></tr><tr><td>Float[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":["null","float"]}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":["null","float"]}]</pre></td></tr><tr><td>int[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":"int"}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":"int"}]</pre></td></tr><tr><td>Integer[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":["null","int"]}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":["null","int"]}]</pre></td></tr><tr><td>long[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":"long"}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":"long"}]</pre></td></tr><tr><td>Long[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":["null","long"]}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":["null","long"]}]</pre></td></tr><tr><td>java.lang.String[] and java.lang.CharSequence[]</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":{"type":"string","avro.java.string":"String"}}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"array","items":{"type":"string","avro.java.string":"String"}}]</pre> or <pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"array","items":"string"}</pre> (or the combination)</td></tr></tbody></table></div></div><br class="table-break"/><p>
+			Additional mappings to Avro schema are:
+		</p><div class="table"><a id="d0e53889"/><p class="title"><b>Table F.4. Additional Mapping</b></p><div class="table-contents"><table summary="Additional Mapping" border="1"><colgroup><col/><col/><col/></colgroup><thead><tr><th>Type</th><th>Default Schema</th><th>Alternative Schemas</th></tr></thead><tbody><tr><td><code class="literal">java.util.Map</code> interface implementation</td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">{"type":"map","values":{"type":"string","avro.java.string":"String"}}</pre></td><td><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">["null",{"type":"map","values":{"type":"string","avro.java.string":"String"}}]</pre></td></tr></tbody></table></div></div><br class="table-break"/></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_avroschemafieldannotation"/>F.6. Customizing Avro Schema Assignment</h2></div></div></div><p>
+		   Esper provides the <code class="literal">@AvroSchemaField</code> annotation to assign a schema to a given property. The annotation requires the <code class="literal">name</code> attribute for the property name and the <code class="literal">schema</code> attributed for the Avro schema text.		
+	   </p><p>
+		   The schema provided via <code class="literal">@AvroSchemaField</code> for a given property replaces the Avro schema that is otherwise assigned according to the above mapping.
+	   </p><p> 
+		   The annotation can be used with <code class="literal">create-schema</code> or with <code class="literal">@EventRepresentation(avro)</code>.
+	   </p><p>
+		   In this example the <code class="literal">carId</code> property is a union of int-type and string-type.
+	   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">@AvroSchemaField(name='carId',schema='["int","string"]') create avro schema MyEvent(carId object)</pre><p>
+		The engine determines the property type from the Avro field schema according to the rules listed above.
+	   </p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_classtoavroschema"/>F.7. Customizing Class-to-Avro Schema</h2></div></div></div><p>
+			In the default configuration only the primitive data types and the abovementioned classes have a corresponding Avro schema.
+			When the engine encounters a class for which is does not know the Avro schema that is should use, it fails the EPL statement validation.
+	   </p><p>
+		   For example, the below EPL is invalid:
+	   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">// Invalid since LocalDateTime has no equivalent Avro schema (by default)
+create avro schema MyEvent(ldt as java.time.LocalDateTime)</pre><p>
+			Instead of using <code class="literal">@AvroSchemaField</code> your application can configure a type-representation mapper class that can return the Avro schema to use.
+			For configuration information please see <a class="xref" href="configuration.html#config-engine-eventmeta-avro" title="17.4.13.2. Avro Settings">Section 17.4.13.2, “Avro Settings”</a> and the JavaDoc.
+		 </p><p>
+			Your application can implement the <code class="literal">com.espertech.esper.client.hook.TypeRepresentationMapper</code> interface. The engine invokes the provided mapper to determine the Avro schema for a given field.
+	   </p><p>
+			For example, the following type mapper implementation maps <code class="literal">LocalDateTime</code> to the Avro string type.
+	   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public class MyTypeRepresentationMapper implements TypeRepresentationMapper {
+  public Object map(TypeRepresentationMapperContext context) {
+    if (context.getClazz() == LocalDateTime.class) {
+      return builder().stringBuilder().endString();
+    }
+    return null;
+  }
+}</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_typemapping"/>F.8. Customizing Object-to-Avro Field Value Assignment</h2></div></div></div><p>
+		   The engine can automatically widen and assign values to Avro fields. In the case when your application requires a custom logic to convert, widen, coerce or transform a value before assigment to an Avro field,
+		   please use the mechanism below.
+	   </p><p>
+			Your application can implement the <code class="literal">com.espertech.esper.client.hook.ObjectValueTypeWidenerFactory</code> interface. The engine invokes the provided factory to determine a widener for values.
+	   </p><p>
+			For example, the factory implementation below returns a type widener that converts <code class="literal">LocalDateTime</code> instances to Avro string-type values by using the date-time formatter:
+	   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public static class MyObjectValueTypeWidenerFactory implements ObjectValueTypeWidenerFactory {
+
+  public TypeWidener make(ObjectValueTypeWidenerFactoryContext context) {
+    if (context.getClazz() == LocalDateTime.class) {
+      return new TypeWidener() {
+        public Object widen(Object input) {
+          LocalDateTime ldt = (LocalDateTime) input;
+          return DateTimeFormatter.ISO_DATE_TIME.format(ldt);
+        }
+      };
+    }
+    return null;
+  }
+}</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_apiexamples"/>F.9. API Examples</h2></div></div></div><p>
+			To obtain the Avro schema for a given event type, use:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public static Schema getAvroSchema(EventType eventType) {
+  return (Schema) ((AvroSchemaEventType) eventType).getSchema();
+}</pre><p>
+			To obtain the Avro schema for a registered event type, you may use:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public static Schema getAvroSchema(EPServiceProvider epService, String eventTypeName) {
+  return getAvroSchema(epService.getEPAdministrator().getConfiguration().getEventType(eventTypeName));
+}</pre><p>
+			To obtain the Avro schema for a given event, you may use:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public static Schema getAvroSchema(EventBean event) {
+  return getAvroSchema(event.getEventType());
+}</pre><p>
+			To obtain the <code class="literal">GenericData.Record</code> for a given event, you may use:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public static Schema getAvroRecord(EventBean event) {
+  return (GenericData.Record) event.getUnderlying();
+}</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepavro_limitations"/>F.10. Limitations</h2></div></div></div><p>
+			The following limitations apply: 
+		</p><div xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="orderedlist"><ol><li><p>
+					An Avro <code class="literal">GenericData.Record</code> cannot contain <code class="literal">EventBean</code> instances. 
+				</p></li><li><p>
+					There is no implicit translation from other event representations to Avro schemas.
+				</p></li><li><p>
+					While the engine performs best-effort assignment checking and widening, it does not actually itself verify that the <code class="literal">GenericData.Record</code> contains valid data, for both production 
+					of <code class="literal">GenericData.Record</code> and consumption of <code class="literal">GenericData.Record</code>.
+					</p></li></ol></div></div></div><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_eventrepoa.html"><strong>Prev</strong>Appendix E. Event Representation: Object-array (O...</a></li><li class="up"><a accesskey="u" href="#"><strong>Top of page</strong></a></li><li class="home"><a accesskey="h" href="index.html"><strong>Front page</strong></a></li><li class="next"><a accesskey="n" href="appendix_eventrepxml.html"><strong>Next</strong>Appendix G. Event Representation: org.w3c.dom.Nod...</a></li></ul></body></html>

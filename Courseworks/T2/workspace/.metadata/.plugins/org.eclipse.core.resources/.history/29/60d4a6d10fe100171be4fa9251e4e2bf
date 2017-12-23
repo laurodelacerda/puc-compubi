@@ -1,0 +1,16 @@
+
+package br.pucrio.inf.lac;
+
+import java.util.UUID;
+
+public class Checkpoint {
+	
+	
+	public Checkpoint(UUID id, Coordinates coordinates)
+	{
+		
+		
+	}
+	
+
+}

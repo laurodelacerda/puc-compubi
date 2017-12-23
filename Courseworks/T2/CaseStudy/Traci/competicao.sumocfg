@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="competicao.net.xml"/>
+        <route-files value="competicao.rou.xml"/>
+    </input>
+	
+	<processing>
+		<lateral-resolution value="1." />
+	</processing>
+
+    <time>
+        <begin value="0"/>
+        <end value="700"/>
+        <step-length value="0.001"/>
+    </time>
+
+    <report>
+        <no-step-log value="true"/>
+    </report>
+
+    <gui_only>
+        <start value="true"/>
+    </gui_only>
+
+	<viewsettings>
+		<viewport y="0" x="250" zoom="100"/>
+	</viewsettings>
+
+</configuration>

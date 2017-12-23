@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory">Appendix D. Event Representation: java.util.Map Events</title><link rel="stylesheet" href="css/espertech.css" type="text/css"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" name="generator" content="DocBook XSL-NS Stylesheets V1.74.0"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" http-equiv="Content-Type" content="text/html; charset=UTF-8"/><link rel="home" href="index.html" title="Esper Reference"/><link rel="up" href="index.html" title="Esper Reference"/><link rel="prev" href="appendix_eventrepbean.html" title="Appendix C. Event Representation: Plain-Old Java Object Events"/><link rel="next" href="appendix_eventrepoa.html" title="Appendix E. Event Representation: Object-array (Object[]) Events"/></head><body><p xmlns:d="http://docbook.org/ns/docbook" id="title"><a href="http://www.espertech.com" class="site_href"><strong>www.espertech.com</strong></a><a href="http://www.espertech.com/esper/documentation.php" class="doc_href"><strong>Documentation</strong></a></p><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_eventrepbean.html"><strong>Prev</strong></a></li><li class="next"><a accesskey="n" href="appendix_eventrepoa.html"><strong>Next</strong></a></li></ul><div class="appendix" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepmap"/>Appendix D. Event Representation: <code class="literal">java.util.Map</code> Events</h2></div></div></div><a id="d0e52660" class="indexterm"/><a id="d0e52663" class="indexterm"/><p>
+		This section provides information for using objects that implement the <code class="literal">java.util.Map</code> interface to represent events. 
+    </p><p>
+		For NEsper .NET also see <a class="xref" href="appendix_dotnet.html#appendix_dotnet_eventrep_map" title="H.8. .NET IDictionary Events">Section H.8, “.NET IDictionary Events”</a>.
+	</p><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepmap_overview"/>D.1. Overview</h2></div></div></div><p>
+			Events can also be represented by objects that implement the <code class="literal">java.util.Map</code> interface. 
+			Event properties of <code class="literal">Map</code> events are the values in the map accessible through the <code class="literal">get</code> method exposed by the <code class="literal">java.util.Map</code> interface.
+		</p><p>
+			Similar to the Object-array event type, the Map event type takes part in the comprehensive type system that can eliminate the need to use Java classes as event types, thereby making it easier to change types at runtime or generate type information from another source.
+		</p><p>
+			A given Map event type can have one or more supertypes that must also be Map event types. All properties available on any of the Map supertypes are available on the type itself. In addition, anywhere within EPL that an event type name of a Map supertype is used, any of its Map subtypes and their subtypes match that expression.
+		</p><p>
+			Your application can add properties to an existing Map event type during runtime using the configuration operation <code class="literal">updateMapEventType</code>. Properties may not be updated or deleted - properties can only be added, and nested properties can be added as well. The runtime configuration also allows removing Map event types and adding them back with new type information.
+		</p><p>
+			After your application configures a Map event type by providing a type name, the type name can be used when defining further Map or Object-array event types by specifying the type name as a property type or an array property type.
+		</p><p>
+			One-to-Many relationships in Map event types are represented via arrays. A property in a Map event type may be an array of primitive, an array of Java object, an array of Map or an an array of Object-array.
+		</p><p>
+			The engine can process <code class="literal">java.util.Map</code> events via the <code class="literal">sendEvent(Map map, String eventTypeName)</code> method on the <code class="literal">EPRuntime</code> interface. Entries in the Map represent event properties. Keys must be of type <code class="literal">java.util.String</code> for the engine to be able to look up event property names specified by pattern or EPL statements. 
+		</p><p>
+			The engine does not validate Map event property names or values. Your application should ensure that objects passed in as event properties match the <code class="literal">create schema</code> property names and types, or the configured event type information when using runtime or static configuration.
+		</p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepmap_properties"/>D.2. Map Properties</h2></div></div></div><p>
+			Map event properties can be of any type. Map event properties that are Java application objects or that are of type <code class="literal">java.util.Map</code> (or arrays thereof) or that are of type <code class="literal">Object[]</code> (object-array) (or arrays thereof) offer additional power:
+		</p><div class="itemizedlist"><ul compact="compact"><li><p>
+					Properties that are Java application objects can be queried via the nested, indexed, mapped and dynamic property syntax as outlined earlier. 
+				</p></li><li><p>
+					Properties that are of type <code class="literal">Map</code> allow Maps to be nested arbitrarily deep and thus can be used to represent complex domain information. The nested, indexed, mapped and dynamic property syntax can be used to query Maps within Maps and arrays of Maps within Maps. 					
+				</p></li><li><p>
+					Properties that are of type <code class="literal">Object[]</code> (object-array) allow object-arrays to be nested arbitrarily deep. The nested, indexed, mapped and dynamic property syntax can be used to query nested Maps and object-arrays alike.
+				</p></li></ul></div><p>
+			In order to use <code class="literal">Map</code> events, the event type name and property names and types must be made known to the engine via Configuration or <code class="literal">create schema</code> EPL syntax. Please see examples in <a class="xref" href="epl_clauses.html#epl_createschema" title="5.15. Declaring an Event Type: Create Schema">Section 5.15, “Declaring an Event Type: Create Schema”</a> and <a class="xref" href="configuration.html#config-java-util-map" title="17.4.2. Events represented by java.util.Map">Section 17.4.2, “Events represented by java.util.Map”</a>.
+		</p><p>
+			The code snippet below defines a Map event type, creates a Map event and sends the event into the engine. The sample defines the <code class="literal">CarLocUpdateEvent</code> event type via runtime configuration interface (<code class="literal">create schema</code> or static configuration could have been used instead).
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">// Define CarLocUpdateEvent event type (example for runtime-configuration interface)
+Map&lt;String, Object&gt; def = new HashMap&lt;String, Object&gt;;
+def.put("carId", String.class);
+def.put("direction", int.class);
+
+epService.getEPAdministrator().getConfiguration().
+  addEventType("CarLocUpdateEvent", def);</pre><p>
+			The <code class="literal">CarLocUpdateEvent</code> can now be used in a statement:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select carId from CarLocUpdateEvent(direction = 1)#time(1 min)</pre><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">// Create a CarLocUpdateEvent event and send it into the engine for processing
+Map&lt;String, Object&gt; event = new HashMap&lt;String, Object&gt;();
+event.put("carId", carId);
+event.put("direction", direction);
+
+epRuntime.sendEvent(event, "CarLocUpdateEvent");</pre><p>
+			The engine can also query Java objects as values in a <code class="literal">Map</code> event via the nested property syntax. Thus <code class="literal">Map</code> events can be used to 
+			aggregate multiple data structures into a single event and query the composite information in a convenient way. The example below demonstrates a <code class="literal">Map</code> event with a transaction and an account object.
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">Map event = new HashMap();
+event.put("txn", txn);
+event.put("account", account);
+epRuntime.sendEvent(event, "TxnEvent");</pre><p>
+			An example statement could look as follows.
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select account.id, account.rate * txn.amount 
+from TxnEvent#time(60 sec) 
+group by account.id</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepmap_supertype"/>D.3. Map Supertypes</h2></div></div></div><p>
+		   Your <code class="literal">Map</code> event type may declare one or more supertypes when configuring the type at engine initialization time or at runtime through the administrative interface. 
+	   </p><p>
+		   Supertypes of a <code class="literal">Map</code> event type must also be Map event types. All property names and types of a supertype are also available on a subtype and override such same-name properties of the subtype. In addition, anywhere within EPL that an event type name of a Map supertype is used, any of its Map subtypes also matches that expression (similar to the concept of interface in Java).
+	   </p><p>
+		   This example assumes that the <code class="literal">BaseUpdate</code> event type has been declared and acts as a supertype to the <code class="literal">AccountUpdate</code> event type (both Map event types): 
+	   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">epService.getEPAdministrator().getConfiguration().
+    addEventType("AccountUpdate", accountUpdateDef, 
+    new String[] {"BaseUpdate"});</pre><p>
+		   Your application EPL statements may select <code class="literal">BaseUpdate</code> events and receive both <code class="literal">BaseUpdate</code> and <code class="literal">AccountUpdate</code> events, as well as any other subtypes of <code class="literal">BaseUpdate</code> and their subtypes.
+	   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">// Receive BaseUpdate and any subtypes including subtypes of subtypes
+select * from BaseUpdate</pre><p>
+		   Your application Map event type may have multiple supertypes. The multiple inheritance hierarchy between Maps can be arbitrarily deep, however cyclic dependencies are not allowed. If using runtime configuration, supertypes must exist before a subtype to a supertype can be added.
+	   </p><p>
+		   See <a class="xref" href="configuration.html#config-java-util-map" title="17.4.2. Events represented by java.util.Map">Section 17.4.2, “Events represented by java.util.Map”</a> for more information on configuring Map event types.
+	   </p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepmap_advanced"/>D.4. Advanced Map Property Types</h2></div></div></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepmap_nested"/>D.4.1. Nested Properties</h3></div></div></div><p>
+			   Strongly-typed nested <code class="literal">Map</code>-within-<code class="literal">Map</code> events can be used to build rich, type-safe event types on the fly. Use the <code class="literal">addEventType</code> method on <code class="literal">Configuration</code> or <code class="literal">ConfigurationOperations</code> for initialization-time and runtime-time type definition, or the <code class="literal">create schema</code> EPL syntax.
+		   </p><p>
+			   Noteworthy points are:
+		   </p><div class="itemizedlist"><ul compact="compact"><li><p>
+						JavaBean (POJO) objects can appear as properties in <code class="literal">Map</code> event types. 
+					</p></li><li><p>
+						One may represent Map-within-Map and Map-Array within Map (same for object-array) using the name of a previously registered Map (or object-array) event type.
+					</p></li><li><p>
+						There is no limit to the number of nesting levels.
+					</p></li><li><p>
+						Dynamic properties can be used to query <code class="literal">Map</code>-within-<code class="literal">Map</code> keys that may not be known in advance. 
+					</p></li><li><p>
+						The engine returns a <code class="literal">null</code> value for properties for which the access path into the nested structure cannot be followed where map entries do not exist.
+					</p></li></ul></div><p>
+			   For demonstration, in this example our top-level event type is an <code class="literal">AccountUpdate</code> event, which has an <code class="literal">UpdatedFieldType</code> structure as a property. Inside the <code class="literal">UpdatedFieldType</code> structure the example defines various fields, as well as a property by name 'history' that holds a JavaBean class <code class="literal">UpdateHistory</code> to represent the update history for the account. The code snippet to define the event type is thus:
+		   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">Map&lt;String, Object&gt; updatedFieldDef = new HashMap&lt;String, Object&gt;();
+updatedFieldDef.put("name", String.class);
+updatedFieldDef.put("addressLine1", String.class);
+updatedFieldDef.put("history", UpdateHistory.class);
+epService.getEPAdministrator().getConfiguration().
+    addEventType("UpdatedFieldType", updatedFieldDef);
+
+Map&lt;String, Object&gt; accountUpdateDef = new HashMap&lt;String, Object&gt;();
+accountUpdateDef.put("accountId", long.class);
+accountUpdateDef.put("fields", "UpdatedFieldType");	
+// the latter can also be:  accountUpdateDef.put("fields", updatedFieldDef);
+
+epService.getEPAdministrator().getConfiguration().
+    addEventType("AccountUpdate", accountUpdateDef);</pre><p>
+			   The next code snippet populates a sample event and sends the event into the engine:
+		   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">Map&lt;String, Object&gt; updatedField = new HashMap&lt;String, Object&gt;();
+updatedField.put("name", "Joe Doe");
+updatedField.put("addressLine1", "40 Popular Street");
+updatedField.put("history", new UpdateHistory());
+
+Map&lt;String, Object&gt; accountUpdate = new HashMap&lt;String, Object&gt;();
+accountUpdate.put("accountId", 10009901);
+accountUpdate.put("fields", updatedField);
+
+epService.getEPRuntime().sendEvent(accountUpdate, "AccountUpdate");</pre><p>
+			   Last, a sample query to interrogate <code class="literal">AccountUpdate</code> events is as follows:
+		   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select accountId, fields.name, fields.addressLine1, fields.history.lastUpdate
+from AccountUpdate</pre></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepmap_array"/>D.4.2. One-to-Many Relationships</h3></div></div></div><p>
+			   To model repeated properties within a Map, you may use arrays as properties in a Map. You may use an array of primitive types or an array of JavaBean objects or an array of a previously declared Map or object-array event type.
+		   </p><p>
+			   When using a previously declared Map event type as an array property, the literal <code class="literal">[]</code> must be appended after the event type name.
+		   </p><p>
+			   This following example defines a Map event type by name <code class="literal">Sale</code> to hold array properties of the various types. It assumes a <code class="literal">SalesPerson</code> Java class exists and a Map event type by name <code class="literal">OrderItem</code> was declared:
+		   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">Map&lt;String, Object&gt; sale = new HashMap&lt;String, Object&gt;();
+sale.put("userids", int[].class);
+sale.put("salesPersons", SalesPerson[].class);
+sale.put("items", "OrderItem[]");	 // The property type is the name itself appended by []
+
+epService.getEPAdministrator().getConfiguration().
+    addEventType("SaleEvent", sale);</pre><p>
+			   The three properties that the above example declares are:
+		   </p><div class="itemizedlist"><ul><li><p>
+					 An integer array of user ids.
+				   </p></li><li><p>
+					 An array of <code class="literal">SalesPerson</code> Java objects.
+				   </p></li><li><p>
+					 An array of Maps for order items.
+				   </p></li></ul></div><p>
+			   The next EPL statement is a sample query asking for property values held by arrays:
+		   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select userids[0], salesPersons[1].name, 
+    items[1], items[1].price.amount from SaleEvent</pre></div></div></div><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_eventrepbean.html"><strong>Prev</strong>Appendix C. Event Representation: Plain-Old Java ...</a></li><li class="up"><a accesskey="u" href="#"><strong>Top of page</strong></a></li><li class="home"><a accesskey="h" href="index.html"><strong>Front page</strong></a></li><li class="next"><a accesskey="n" href="appendix_eventrepoa.html"><strong>Next</strong>Appendix E. Event Representation: Object-array (O...</a></li></ul></body></html>

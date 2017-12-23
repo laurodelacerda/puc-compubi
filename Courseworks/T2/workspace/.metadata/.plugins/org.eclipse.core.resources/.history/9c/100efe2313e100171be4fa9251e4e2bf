@@ -1,0 +1,19 @@
+
+package br.pucrio.inf.lac;
+
+import java.util.UUID;
+
+public class Checkpoint {
+	
+	
+	// Allowed Checkpoints (Beacons): 1-001B351177C1
+	private String[] beacons = {"1-001B351177C1"};	
+	
+	public Checkpoint(/*UUID id,*/ Coordinates coordinates, boolean isSensorTag)
+	{
+		
+		
+	}
+	
+
+}

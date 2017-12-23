@@ -1,0 +1,88 @@
+Info:
+
+-> Periodicidade de envio: 1s
+
+-> Variação de signal:
+
+* sinal RSSI permitido: -100 ~ 0dBm
+
+   - menos de 1m : {-55...-50} # raio de até 1m
+   - mais de 3m : {-74...-86} # raio de 3m
+   - mais de 4m : {-}  # muito distante, sinal fraco
+
+-> No artigo/apresentação, falar sobre o MAPE
+   - Monitor
+   - Analyse
+   - Process
+   - Execute
+
+-> Dúvida: Persistir dados de ambiente em um BD?
+
+
+Sobre JSON
+
+Geralmente, cada MHub envia dados de duas fontes. Cada Mhub mantém um uuid único, mas pode ter n sources.
+Exemplo: O meu celular, que tem uuid 95881e7d-5e0a-490d-8f66-80a8dd0950a6 e as fontes 1-78A5048C1548 (sensorTag) e 1-F4F5D8559CA7 (talvez sensores do próprio celular)
+
+1-78A5048C1548 envia dados do sensorTag como:
+
+Potência do Sinal, Timestamp, Temperatura, Umidade, Barômetro, Gyroscópio, Acelerômetro, Magnetômetro, 
+
+1-F4F5D8559CA7 envia dados do celular contendo:
+
+potência do sinal, latitude, longitude, timestamp
+
+Também há um JSON com o mesmo uuid, porém sem fonte, que envia as seguintes informações com periodicidade de 20 segundos:
+
+data e hora, acurária (de data e hora?), provedor(gps ou rede), velocidade, velocidade, rolamento, altitude, conexão, bateria, status de carregamento da bateria, dados de localização (lat e long), timestamp
+
+
+
+- Plotagem de Gráficos em Dashboard - 
+
+-> Grafana - https://github.com/grafana/grafana
+-> Dashing - https://github.com/Shopify/dashing
+
+
+
+
+- JSONs úteis -
+
+"data"
+
+{"uuid":"95881e7d-5e0a-490d-8f66-80a8dd0950a6",
+"date":"Mon Dec 11 23:18:37 GMT-02:00 2017",
+"accuracy":20.121000289916992,
+"provider":"network",
+"speed":0,
+"bearing":0,
+"altitude":0,
+"connection":"java.lang.InfoConnectivityWifi",
+"battery":44,
+"charging":false,
+"tag":"LocationData",
+"latitude":-22.8830423,
+"longitude":-43.0844477,
+"timestamp":1513041517}
+
+{"uuid":"95881e7d-5e0a-490d-8f66-80a8dd0950a6","date":"Tue Dec 12 00:20:19 GMT-02:00 2017","accuracy":26,"provider":"gps","speed":0,"bearing":0,
+"altitude":11,"connection":"java.lang.InfoConnectivityWifi",
+"battery":33,"charging":false,"tag":"LocationData",
+"latitude":-22.88304059,"longitude":-43.08451807,"timestamp":1513045219}
+null
+
+
+1-F4F5D8559CA7 - action 
+
+{"uuid":"95881e7d-5e0a-490d-8f66-80a8dd0950a6",
+"source":"1-F4F5D8559CA7",
+"action":"found",
+"signal":-90,
+"latitude":-22.88304037,
+"longitude":-43.08451719,
+"tag":"SensorData",
+"timestamp":1513046197}
+
+
+-22.980856, -43.233726 | -22.980728, -43.233855 | -22.980496, -43.233560 | -22.98082, -43.23341
+

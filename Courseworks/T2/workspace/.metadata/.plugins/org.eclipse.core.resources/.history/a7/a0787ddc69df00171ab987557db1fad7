@@ -1,0 +1,22 @@
+
+package br.pucrio.inf.lac;
+
+public class RunnerCoordinates {
+	
+    private final double latitude;
+    private final double longitude;
+
+    public RunnerCoordinates(double lat, double lon) {
+        latitude = lat;
+        longitude = lon;
+    }
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+ 
+}

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory">Chapter 1. Getting Started</title><link rel="stylesheet" href="css/espertech.css" type="text/css"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" name="generator" content="DocBook XSL-NS Stylesheets V1.74.0"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" http-equiv="Content-Type" content="text/html; charset=UTF-8"/><link rel="home" href="index.html" title="Esper Reference"/><link rel="up" href="index.html" title="Esper Reference"/><link rel="prev" href="preface.html" title="Preface"/><link rel="next" href="event_representation.html" title="Chapter 2. Event Representations"/></head><body><p xmlns:d="http://docbook.org/ns/docbook" id="title"><a href="http://www.espertech.com" class="site_href"><strong>www.espertech.com</strong></a><a href="http://www.espertech.com/esper/documentation.php" class="doc_href"><strong>Documentation</strong></a></p><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="preface.html"><strong>Prev</strong></a></li><li class="next"><a accesskey="n" href="event_representation.html"><strong>Next</strong></a></li></ul><div class="chapter" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="gettingstarted"/>Chapter 1. Getting Started</h2></div></div></div><div class="toc"><dl><dt><span class="sect1"><a href="gettingstarted.html#gettingstarted_introcep">1.1. Introduction to CEP and event series analysis</a></span></dt><dt><span class="sect1"><a href="gettingstarted.html#gettingstarted_steps">1.2. Steps</a></span></dt><dd><dl><dt><span class="sect2"><a href="gettingstarted.html#gettingstarted_steps_1">1.2.1. Step One: Setting up Classpath</a></span></dt><dt><span class="sect2"><a href="gettingstarted.html#gettingstarted_steps_2">1.2.2. Step Two: Obtain Engine Instance</a></span></dt><dt><span class="sect2"><a href="gettingstarted.html#gettingstarted_steps_3">1.2.3. Step Three: Provide Information on Input Events</a></span></dt><dt><span class="sect2"><a href="gettingstarted.html#gettingstarted_steps_4">1.2.4. Step Four: Create EPL Statements and Attach Callbacks</a></span></dt><dt><span class="sect2"><a href="gettingstarted.html#gettingstarted_steps_5">1.2.5. Step Five: Send Events</a></span></dt></dl></dd><dt><span class="sect1"><a href="gettingstarted.html#required_3rd_party">1.3. Required 3rd Party Libraries</a></span></dt></dl></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="gettingstarted_introcep"/>1.1. Introduction to CEP and event series analysis</h2></div></div></div><p>
+			The Esper engine has been developed to address the requirements of applications that analyze and react to events. Some typical examples of applications are:
+        </p><div class="itemizedlist"><ul compact="compact"><li><p>
+					Business process management and automation (process monitoring, BAM, reporting exceptions) 
+				</p></li><li><p>
+					Finance (algorithmic trading, fraud detection, risk management)
+				</p></li><li><p>
+					Network and application monitoring (intrusion detection, SLA monitoring)
+				</p></li><li><p>
+					Sensor network applications (RFID reading, scheduling and control of fabrication lines, air traffic) 
+				</p></li></ul></div><p>
+			What these applications have in common is the requirement to process events (or messages) in real-time or near real-time. This is sometimes referred to as complex event processing (CEP) and event series analysis. Key considerations for these types of applications are throughput, latency and the complexity of the logic required.
+        </p><div class="itemizedlist"><ul compact="compact"><li><p>
+					High throughput - applications that process large volumes of messages (between 1,000 to 100k messages per second)
+				</p></li><li><p>
+					Low latency - applications that react in real-time to conditions that occur (from a few milliseconds to a few seconds)
+				</p></li><li><p>
+					Complex computations - applications that detect patterns among events (event correlation), filter events, aggregate time or length windows of events, join event series, trigger based on absence of events etc.
+				</p></li></ul></div><p>
+			The Esper engine was designed to make it easier to build and extend CEP applications. 
+        </p><p>
+			More information on CEP can be found at <a class="link" href="http://espertech.com/esper/faq_esper.php#whatiscep" target="">FAQ</a>.
+        </p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="gettingstarted_steps"/>1.2. Steps</h2></div></div></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="gettingstarted_steps_1"/>1.2.1. Step One: Setting up Classpath</h3></div></div></div><p>
+				Please add Esper and dependent jar files to the classpath:
+			</p><div class="itemizedlist"><ul><li><p>Esper core jar file <code class="literal">esper-</code><span class="emphasis"><em>version</em></span><code class="literal">.jar</code></p></li><li><p>ANTLR parser jar file <code class="literal">antlr-runtime-4.5.3.jar</code></p></li><li><p>CGLIB code generator jar file <code class="literal">cglib-nodep-3.2.4.jar</code></p></li><li><p>SLF4J logging library <code class="literal">slf4j-api-1.7.21.jar</code></p></li></ul></div><p>
+				Optionally, for logging using Log4j, please add <code class="literal">slf4j-log4j12-1.7.21.jar</code> and <code class="literal">log4j-1.2.17.jar</code> to the classpath.
+			</p><p>
+				Optionally, for using Apache Avro with Esper, please add <code class="literal">esper-avro-</code><span class="emphasis"><em>version</em></span><code class="literal">.jar</code> to the classpath.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="gettingstarted_steps_2"/>1.2.2. Step Two: Obtain Engine Instance</h3></div></div></div><p>
+				Your application can obtain an engine instance by calling the <code class="literal">getDefaultPovider</code> static method of the <code class="literal">EPServiceProviderManager</code> class:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">EPServiceProvider engine = EPServiceProviderManager.getDefaultProvider();</pre><p>
+				This example does not provide a <code class="literal">Configuration</code> configuration object and thus the engine instance returned is configured with defaults. The default engine URI, which is simply the name assigned to the engine, is <code class="literal">"default"</code>.
+			</p><p>
+				More information about <code class="literal">EPServiceProviderManager</code> can be found at <a class="xref" href="api.html#api-engine-instances" title="16.2. The Service Provider Interface">Section 16.2, “The Service Provider Interface”</a> and the JavaDoc.
+			</p><p>
+				More information about engine configuration can be found at <a class="xref" href="configuration.html" title="Chapter 17. Configuration">Chapter 17, <i>Configuration</i></a> and the JavaDoc. 
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="gettingstarted_steps_3"/>1.2.3. Step Three: Provide Information on Input Events</h3></div></div></div><p>
+				Your application can register an event type to instruct the engine what the input events look like. When creating EPL statements the engine checks the available event type information
+				to determine that the statement is valid.
+			</p><p>
+				This example assumes that there is a Java class <code class="literal">PersonEvent</code> and each instance of the <code class="literal">PersonEvent</code> class is an event. Note that it is not necessary to create classes for each event type, as explained below. Here is the class:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">package com.mycompany.myapp;
+
+public class PersonEvent {
+  private String name;
+  private int age;
+
+  public PersonEvent(String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public int getAge() {
+    return age;
+  }
+}</pre><p>
+				Your application can call the <code class="literal">addEventType</code> method  that is part of the runtime configuration interface to tell the engine about the <code class="literal">PersonEvent</code> class:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">engine.getEPAdministrator().getConfiguration().addEventType(PersonEvent.class);</pre><p>
+				Upon calling the <code class="literal">addEventType</code> method and passing the <code class="literal">PersonEvent</code> class the engine inspects the class using reflection and determines the event properties.
+				Because the class has two JavaBean-standard getter-methods the engine determines that a <code class="literal">PersonEvent</code> has two properties: the <code class="literal">name</code> property of type <code class="literal">string</code> and the <code class="literal">age</code> property of type <code class="literal">int</code>.
+			</p><p>
+				Now that the <code class="literal">PersonEvent</code> event type is known to the engine, your application can create EPL statements that have <code class="literal">PersonEvent</code> in the <code class="literal">from</code>-clause and EPL can refer to event property names.
+			</p><p>
+				Instead of <code class="literal">PersonEvent</code> being a Java class, it could also be an Apache Avro schema or an XML schema or a Map or array of names and properties. The different event representations are discussed at <a class="xref" href="event_representation.html#eventrep_comparing" title="2.5. Comparing Event Representations">Section 2.5, “Comparing Event Representations”</a>.
+			</p><p>
+				Your application can instead pre-configure event types using the <code class="literal">Configuration</code> object, see <a class="xref" href="configuration.html#configuration-items" title="17.4. Configuration Items">Section 17.4, “Configuration Items”</a>.
+			</p><p>
+				Your application can, instead of calling an API, add event types using EPL with <code class="literal">create schema</code>, see <a class="xref" href="epl_clauses.html#epl_createschema" title="5.15. Declaring an Event Type: Create Schema">Section 5.15, “Declaring an Event Type: Create Schema”</a>.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="gettingstarted_steps_4"/>1.2.4. Step Four: Create EPL Statements and Attach Callbacks</h3></div></div></div><p>
+				The sample EPL for this getting-started section simply selects the name and the age of each arriving person event:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select name, age from PersonEvent</pre><p>
+				Your application can create an EPL statement using the <code class="literal">createEPL</code> method that is part of the administrative interface.
+			</p><p>
+				The API calls are:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">String epl = "select name, age from PersonEvent";
+EPStatement statement = engine.getEPAdministrator().createEPL(epl);</pre><p>
+				Upon creating the statement, the engine verifies that <code class="literal">PersonEvent</code> exists since it is listed in the <code class="literal">from</code>-clause.
+				The engine also verifies that the <code class="literal">name</code> and <code class="literal">age</code> properties are available for the <code class="literal">PersonEvent</code> since they are listed in the <code class="literal">select</code>-clause.
+			</p><p>
+				After successful verification, the engine internally adds an entry to an internally-maintained filter index tree structure that ensures that when a <code class="literal">PersonEvent</code> comes in it will be processed by the statement.
+			</p><p>
+				Your application can attach a callback to the <code class="literal">EPStatement</code> to receive statement results.
+			</p><p>
+				The following callback simply prints name and age:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">statement.addListener( (newData, oldData) -&gt; {
+  String name = (String) newData[0].get("name");
+  int age = (int) newData[0].get("age");
+  System.out.println("String.format(Name: %s, Age: %d", name, age));
+});</pre><p>
+				More information about creating EPL statements is at <a class="xref" href="api.html#api-admin-creating" title="16.3.1. Creating Statements">Section 16.3.1, “Creating Statements”</a> and <a class="xref" href="devlifecycle.html#devlifecycle-admin" title="18.6. The Deployment Administrative Interface">Section 18.6, “The Deployment Administrative Interface”</a> and the JavaDoc.
+			</p><p>
+				Your application can provide different kinds of callbacks, see <a class="xref" href="api.html#api-receive-results" title="16.3.2. Receiving Statement Results">Section 16.3.2, “Receiving Statement Results”</a>.
+			  </p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="gettingstarted_steps_5"/>1.2.5. Step Five: Send Events</h3></div></div></div><p>
+				Your application can send events into the engine using the <code class="literal">sendEvent</code> method that is part of the runtime interface:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">engine.getEPRuntime().sendEvent(new PersonEvent("Peter", 10));</pre><p>
+				The output you should see is:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">Name: Peter, Age: 10</pre><p>
+				Upon sending the <code class="literal">PersonEvent</code> event object to the engine, the engine consults the internally-maintainced shared filter index tree structure to determine if any EPL statement is interested in <code class="literal">PersonEvent</code> events.
+				The EPL statement that was created as part of this example has <code class="literal">PersonEvent</code> in the <code class="literal">from</code>-clause, thus the engine delegates processing of such events to the statement.
+				The EPL statement obtains the name and age properties by calling the <code class="literal">getName</code> and <code class="literal">getAge</code> methods.
+			</p><p>
+				For different event representations and <code class="literal">sendEvent</code> methods please see <a class="xref" href="event_representation.html#eventrep_comparing" title="2.5. Comparing Event Representations">Section 2.5, “Comparing Event Representations”</a>.
+			</p><p>
+				Specialized event senders are explained in <a class="xref" href="api.html#api-runtime-eventsender" title="16.4.1. Event Sender">Section 16.4.1, “Event Sender”</a>.
+			</p><p>
+				For reference, here is the complete code without event class:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">EPServiceProvider engine = EPServiceProviderManager.getDefaultProvider();
+engine.getEPAdministrator().getConfiguration().addEventType(PersonEvent.class);
+String epl = "select name, age from PersonEvent";
+EPStatement statement = engine.getEPAdministrator().createEPL(epl);
+statement.addListener( (newData, oldData) -&gt; {
+  String name = (String) newData[0].get("name");
+  int age = (int) newData[0].get("age");
+  System.out.println(String.format("Name: %s, Age: %d", name, age));
+});
+engine.getEPRuntime().sendEvent(new PersonEvent("Peter", 10));
+</pre></div></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="required_3rd_party"/>1.3. Required 3rd Party Libraries</h2></div></div></div><p>
+            Esper requires the following 3rd-party libraries at runtime:
+        </p><div class="itemizedlist"><ul compact="compact"><li><p>
+					ANTLR is the parser generator used for parsing and parse tree walking of the pattern and EPL syntax. Credit goes to Terence Parr at http://www.antlr.org. The ANTLR license is a BSD license and is provided in the lib directory. The <code class="literal">antlr-runtime</code> runtime library is required for runtime.
+				</p></li><li><p>
+					CGLIB is the code generation library for fast method calls, licensed under Apache 2.0 license as provided in the lib directory.
+				</p></li><li><p>
+					SLF4J is a logging API that can work together with LOG4J and other logging APIs. While SLF4J is required, the LOG4J log component is not required and can be replaced with other loggers. SLF4J is licensed under Apache 2.0 license as provided in the lib directory.
+				</p></li></ul></div><p>
+            Esper requires the following 3rd-party libraries for running the test suite:
+        </p><div class="itemizedlist"><ul compact="compact"><li><p>
+					JUnit is a great unit testing framework. Its license has also been placed in the lib directory. The library is required for build-time only.
+				</p></li><li><p>
+					MySQL connector library is used for testing SQL integration and is required for running the automated test suite.
+				</p></li></ul></div></div></div><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="preface.html"><strong>Prev</strong>Preface</a></li><li class="up"><a accesskey="u" href="#"><strong>Top of page</strong></a></li><li class="home"><a accesskey="h" href="index.html"><strong>Front page</strong></a></li><li class="next"><a accesskey="n" href="event_representation.html"><strong>Next</strong>Chapter 2. Event Representations</a></li></ul></body></html>

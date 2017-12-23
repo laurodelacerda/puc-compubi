@@ -1,0 +1,4 @@
+#!/bin/sh
+cd /home/lauro/Desktop/Mestrado/Disciplinas/INF2541_CompUbiqua/OpenSplice/
+java -jar contextnet-2.5.jar 127.0.0.1 4500 OpenSplice
+

@@ -1,0 +1,17 @@
+package br.pucrio.inf.lac;
+
+import java.util.Date;
+
+public class Testes {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		Date date = new Date((long)1513268645 * 1000);
+		Date date2 = new Date((long)1513271439252L);
+		System.out.println(date);
+		System.out.println(date2);
+	}
+
+}

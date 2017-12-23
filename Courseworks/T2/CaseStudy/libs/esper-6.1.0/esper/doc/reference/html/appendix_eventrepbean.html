@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory">Appendix C. Event Representation: Plain-Old Java Object Events</title><link rel="stylesheet" href="css/espertech.css" type="text/css"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" name="generator" content="DocBook XSL-NS Stylesheets V1.74.0"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" http-equiv="Content-Type" content="text/html; charset=UTF-8"/><link rel="home" href="index.html" title="Esper Reference"/><link rel="up" href="index.html" title="Esper Reference"/><link rel="prev" href="appendix_keywords.html" title="Appendix B. Reserved Keywords"/><link rel="next" href="appendix_eventrepmap.html" title="Appendix D. Event Representation: java.util.Map Events"/></head><body><p xmlns:d="http://docbook.org/ns/docbook" id="title"><a href="http://www.espertech.com" class="site_href"><strong>www.espertech.com</strong></a><a href="http://www.espertech.com/esper/documentation.php" class="doc_href"><strong>Documentation</strong></a></p><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_keywords.html"><strong>Prev</strong></a></li><li class="next"><a accesskey="n" href="appendix_eventrepmap.html"><strong>Next</strong></a></li></ul><div class="appendix" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean"/>Appendix C. Event Representation: Plain-Old Java Object Events</h2></div></div></div><a id="d0e52346" class="indexterm"/><p>
+		This section provides information for using Plain-Old or Bean Java Objects to represent events. 
+    </p><p>
+			For NEsper .NET also see <a class="xref" href="appendix_dotnet.html#appendix_dotnet_eventrep_javabean" title="H.7. .NET Object Events">Section H.7, “.NET Object Events”</a>.
+	</p><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean_overview"/>C.1. Overview</h2></div></div></div><p>
+			Plain-old Java object events are object instances that expose event properties through JavaBeans-style getter methods. Events classes or interfaces do not have to be fully compliant to the JavaBean specification; however for the Esper engine to obtain event properties, the required JavaBean getter methods must be present or an accessor-style and accessor-methods may be defined via configuration.
+		</p><p>
+			Esper supports JavaBeans-style event classes that extend a superclass or implement one or more interfaces. 
+			Also, Esper event pattern and EPL statements can refer to Java interface classes and abstract classes. 
+		</p><p>
+			Classes that represent events should be made immutable. As events are recordings of a state change or action that occurred in the past, the relevant event properties should not be changeable. However this is not a hard requirement and the Esper engine accepts events that are mutable as well.
+		</p><p>
+			The <code class="literal">hashCode</code> and <code class="literal">equals</code> methods do not need to be implemented. The implementation of these methods by a Java event class does not affect the behavior of the engine in any way.
+		</p><p>
+			Please see <a class="xref" href="configuration.html" title="Chapter 17. Configuration">Chapter 17, <i>Configuration</i></a> on options for naming event types represented by Java object event classes.
+			Java classes that do not follow JavaBean conventions, such as legacy Java classes that expose public fields, or methods not following naming conventions, require additional configuration. Via configuration it is also possible to control case sensitivity in property name resolution. The relevant section in the chapter on configuration is <a class="xref" href="configuration.html#config-java-legacy" title="17.4.1.3. Non-JavaBean and Legacy Java Event Classes">Section 17.4.1.3, “Non-JavaBean and Legacy Java Event Classes”</a>.
+		</p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean_properties"/>C.2. Java Object Event Properties</h2></div></div></div><p>
+			As outlined earlier, the different property types are supported by the standard JavaBeans specification, and some of which are uniquely supported by Esper:
+		</p><div class="itemizedlist"><ul compact="compact"><li><p>
+					<span class="emphasis"><em>Simple</em></span> properties have a single value that may be retrieved. The underlying property type might be a Java language primitive (such as int, a simple object (such as a java.lang.String), or a more complex object whose class is defined either by the Java language, by the application, or by a class library included with the application.
+				</p></li><li><p>
+					<span class="emphasis"><em>Indexed</em></span> - An indexed property stores an ordered collection of objects (all of the same type) that can be individually accessed by an integer-valued, non-negative index (or subscript). 
+				</p></li><li><p>
+					<span class="emphasis"><em>Mapped</em></span> - As an extension to standard JavaBeans APIs, Esper considers any property that accepts a String-valued key a mapped property. 
+				</p></li><li><p>
+					<span class="emphasis"><em>Nested</em></span> - A nested property is a property that lives within another Java object which itself is a property of an event. 
+				</p></li></ul></div><p>
+			Assume there is an <code class="literal">NewEmployeeEvent</code> event class as shown below. The mapped and indexed properties in this example return Java objects but could also return Java language primitive types (such as int or String). The <code class="literal">Address</code> object and <code class="literal">Employee</code> can themselves have properties that are nested within them, such as a street name in the <code class="literal">Address</code> object or a name of the employee in the <code class="literal">Employee</code> object.
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public class NewEmployeeEvent {
+	public String getFirstName();
+	public Address getAddress(String type);
+	public Employee getSubordinate(int index);
+	public Employee[] getAllSubordinates();
+}
+</pre><p>
+				<span class="emphasis"><em>Simple</em></span> event properties require a getter-method that returns the property value. In this example, the <code class="literal">getFirstName</code> getter method returns the <code class="literal">firstName</code> event property of type String.
+			</p><p>
+				<span class="emphasis"><em>Indexed</em></span> event properties require either one of the following getter-methods. A method that takes an integer-type key value and returns the property value, such as the <code class="literal">getSubordinate</code> method, or a method that returns an array-type, or a class that implements <code class="literal">Iterable</code>. An example is the <code class="literal">getAllSubordinates</code> getter method, which returns an array of Employee but could also return an <code class="literal">Iterable</code>. In an EPL or event pattern statement, indexed properties are accessed via the <code class="literal">property[index]</code> syntax.
+			</p><p>
+				<span class="emphasis"><em>Mapped</em></span> event properties require a getter-method that takes a String-typed key value and returns the property value, such as the <code class="literal">getAddress</code> method. In an EPL or event pattern statement, mapped properties are accessed via the <code class="literal">property('key')</code> syntax.
+			</p><p>
+				<span class="emphasis"><em>Nested</em></span> event properties require a getter-method that returns the nesting object. The <code class="literal">getAddress</code> and <code class="literal">getSubordinate</code> methods are mapped and indexed properties that return a nesting object. In an EPL or event pattern statement, nested properties are accessed via the <code class="literal">property.nestedProperty</code> syntax.
+			</p><p>
+				All event pattern and EPL statements allow the use of indexed, mapped and nested properties (or a combination of these) anywhere where one or more event property names are expected. The below example shows different combinations of indexed, mapped and nested properties in filters of event pattern expressions (each line is a separate EPL statement):
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">every NewEmployeeEvent(firstName='myName')
+every NewEmployeeEvent(address('home').streetName='Park Avenue')
+every NewEmployeeEvent(subordinate[0].name='anotherName')
+every NewEmployeeEvent(allSubordinates[1].name='thatName')
+every NewEmployeeEvent(subordinate[0].address('home').streetName='Water Street')</pre><p>
+				Similarly, the syntax can be used in EPL statements in all places where an event property name is expected, such as in select lists, where-clauses or join criteria.
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select firstName, address('work'), subordinate[0].name, subordinate[1].name
+from NewEmployeeEvent(address('work').streetName = 'Park Ave')</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean_propertynames"/>C.3. Property Names</h2></div></div></div><p>
+				Property names follows Java standards: the class <code class="literal">java.beans.Introspector</code> and method <code class="literal">getBeanInfo</code> returns the property names as derived from the name of getter methods. In addition, Esper configuration provides a flag to turn off case-sensitive property names. A sample list of getter methods and property names is: 
+			</p><div class="table"><a id="d0e52504"/><p class="title"><b>Table C.1. JavaBeans-style Getter Methods and Property Names</b></p><div class="table-contents"><table summary="JavaBeans-style Getter Methods and Property Names" border="1"><colgroup><col/><col/><col/></colgroup><thead><tr><th>Method</th><th>Property Name</th><th>Example</th></tr></thead><tbody><tr><td><code class="literal">getPrice()</code></td><td>price</td><td><pre class="synopsis">select price from MyEvent</pre></td></tr><tr><td><code class="literal">getNAME()</code></td><td>NAME</td><td><pre class="synopsis">select NAME from MyEvent</pre></td></tr><tr><td><code class="literal">getItemDesc()</code></td><td>itemDesc</td><td><pre class="synopsis">select itemDesc from MyEvent</pre></td></tr><tr><td><code class="literal">getQ()</code></td><td>q</td><td><pre class="synopsis">select q from MyEvent</pre></td></tr><tr><td><code class="literal">getQN()</code></td><td>QN</td><td><pre class="synopsis">select QN from MyEvent</pre></td></tr><tr><td><code class="literal">getqn()</code></td><td>qn</td><td><pre class="synopsis">select qn from MyEvent</pre></td></tr><tr><td><code class="literal">gets()</code></td><td>s</td><td><pre class="synopsis">select s from MyEvent</pre></td></tr></tbody></table></div></div><br class="table-break"/></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean_parameterized"/>C.4. Parameterized Types</h2></div></div></div><p>
+			When your getter methods or accessor fields return a parameterized type, for example <code class="literal">Iterable&lt;MyEventData&gt;</code> for an indexed property or <code class="literal">Map&lt;String, MyEventData&gt;</code> for a mapped property, then property expressions may refer to the properties available through the class that is the type parameter.
+		</p><p>
+			An example event that has properties that are parameterized types is:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public class NewEmployeeEvent {
+public String getName();
+public Iterable&lt;EducationHistory&gt; getEducation();
+public Map&lt;String, Address&gt; getAddresses();
+}</pre><p>
+			A sample of valid property expressions for this event is shown next:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select name, education, education[0].date, addresses('home').street
+from NewEmployeeEvent</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean_indexedmappedsetter"/>C.5. Setter Methods for Indexed and Mapped Properties</h2></div></div></div><p>
+			An EPL statement may update indexed or mapped properties of an event, provided the event class exposes the required setter method. 
+		</p><p>
+			The setter method for indexed properties must be named <code class="literal">set</code><span class="emphasis"><em>PropertyName</em></span> and must take two parameters: the <code class="literal">int</code>-type index and the <code class="literal">Object</code> type new value.
+		</p><p>
+			The setter method for mapped properties must be named <code class="literal">set</code><span class="emphasis"><em>PropertyName</em></span> and must take two parameters: the <code class="literal">String</code>-type map key and the <code class="literal">Object</code> type new map value.
+		</p><p>
+		  The following is an example event that features a setter method for the <code class="literal">props</code> mapped property and for the <code class="literal">array</code> indexed property:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">public class MyEvent {
+  private Map props = new HashMap();
+  private Object[] array = new Object[10];
+
+  public void setProps(String name, Object value) {
+    props.put(name, value);
+  }
+
+  public void setArray(int index, Object value) {
+    array[index] = value;
+  }
+  // ... also provide regular JavaBean getters and setters for all properties</pre><p>
+		  This sample statement updates mapped and indexed property values:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">update istream MyEventStream set props('key') = 'abc', array[2] = 100</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepbean_knownlimit"/>C.6. Known Limitations</h2></div></div></div><p>
+			Esper employs byte code generation for fast access to event properties. When byte code generation is unsuccessful, the engine logs a warning and uses Java reflection to obtain property values instead.
+		</p><p>
+			A known limitation is that when an interface has an attribute of a particular type and the actual event bean class returns a subclass of that attribute, the engine logs a warning and uses reflection for that property.
+		</p></div></div><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_keywords.html"><strong>Prev</strong>Appendix B. Reserved Keywords</a></li><li class="up"><a accesskey="u" href="#"><strong>Top of page</strong></a></li><li class="home"><a accesskey="h" href="index.html"><strong>Front page</strong></a></li><li class="next"><a accesskey="n" href="appendix_eventrepmap.html"><strong>Next</strong>Appendix D. Event Representation: java.util.Map E...</a></li></ul></body></html>

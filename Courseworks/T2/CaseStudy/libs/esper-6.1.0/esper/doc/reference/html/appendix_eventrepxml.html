@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory">Appendix G. Event Representation: org.w3c.dom.Node XML Events</title><link rel="stylesheet" href="css/espertech.css" type="text/css"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" name="generator" content="DocBook XSL-NS Stylesheets V1.74.0"/><meta xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" http-equiv="Content-Type" content="text/html; charset=UTF-8"/><link rel="home" href="index.html" title="Esper Reference"/><link rel="up" href="index.html" title="Esper Reference"/><link rel="prev" href="appendix_eventrepavro.html" title="Appendix F. Event Representation: Avro Events (org.apache.avro.generic.GenericData.Record)"/><link rel="next" href="appendix_dotnet.html" title="Appendix H. NEsper .NET -Specific Information"/></head><body><p xmlns:d="http://docbook.org/ns/docbook" id="title"><a href="http://www.espertech.com" class="site_href"><strong>www.espertech.com</strong></a><a href="http://www.espertech.com/esper/documentation.php" class="doc_href"><strong>Documentation</strong></a></p><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_eventrepavro.html"><strong>Prev</strong></a></li><li class="next"><a accesskey="n" href="appendix_dotnet.html"><strong>Next</strong></a></li></ul><div class="appendix" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepxml"/>Appendix G. Event Representation: <code class="literal">org.w3c.dom.Node</code> XML Events</h2></div></div></div><a id="d0e54055" class="indexterm"/><a id="d0e54058" class="indexterm"/><p>
+		This section provides information for using <code class="literal">org.w3c.dom.Node</code> XML to represent events. 
+    </p><p>
+		For NEsper .NET also see <a class="xref" href="appendix_dotnet.html#appendix_dotnet_eventrep_xml" title="H.9. .NET XML Events">Section H.9, “.NET XML Events”</a>.
+	</p><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepxml_overview"/>G.1. Overview</h2></div></div></div><p>
+			Events can be represented as <code class="literal">org.w3c.dom.Node</code> instances and send into the engine via the <code class="literal">sendEvent</code> method on <code class="literal">EPRuntime</code> or via <code class="literal">EventSender</code>. Please note that configuration is required so the event type name and root element name is known. See <a class="xref" href="configuration.html" title="Chapter 17. Configuration">Chapter 17, <i>Configuration</i></a>.
+		</p><p>
+			If a XML schema document (XSD file) can be made available as part of the configuration, then Esper can read the schema and appropriately present event type metadata and validate statements that use the event type and its properties. See <a class="xref" href="appendix_eventrepxml.html#appendix_eventrepxml_schema" title="G.2. Schema-Provided XML Events">Section G.2, “Schema-Provided XML Events”</a>.
+		</p><p>
+			When no XML schema document is provided, XML events can still be queried, however the return type and return values of property expressions are string-only and no event type metadata is available other than for explicitly configured properties. See <a class="xref" href="appendix_eventrepxml.html#appendix_eventrepxml_noschema" title="G.3. No-Schema-Provided XML Events">Section G.3, “No-Schema-Provided XML Events”</a>.
+		</p><p>
+			In all cases Esper allows you to configure explicit XPath expressions as event properties. You can specify arbitrary XPath functions or expressions and provide a property name and type by which result values will be available for use in EPL statements. See <a class="xref" href="appendix_eventrepxml.html#appendix_eventrepxml_explicit" title="G.4. Explicitly-Configured Properties">Section G.4, “Explicitly-Configured Properties”</a>.
+		</p><p>
+			Nested, mapped and indexed event properties are also supported in expressions against <code class="literal">org.w3c.dom.Node</code> events. Thus XML trees can conveniently be interrogated via the property expression syntax.
+		</p><p>
+			Only one event type per root element name may be configured. The engine recognizes each event by its root element name or you may use <code class="literal">EventSender</code> to send events.
+		</p><p>
+			This section uses the following XML document as an example:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Sensor xmlns="SensorSchema"&gt;
+  &lt;ID&gt;urn:epc:1:4.16.36&lt;/ID&gt;
+  &lt;Observation Command="READ_PALLET_TAGS_ONLY"&gt;
+    &lt;ID&gt;00000001&lt;/ID&gt;
+    &lt;Tag&gt;
+      &lt;ID&gt;urn:epc:1:2.24.400&lt;/ID&gt;
+    &lt;/Tag&gt;
+    &lt;Tag&gt;
+      &lt;ID&gt;urn:epc:1:2.24.401&lt;/ID&gt;
+    &lt;/Tag&gt;
+  &lt;/Observation&gt;
+&lt;/Sensor&gt;</pre><p>
+			The schema for the example is:
+		</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+
+  &lt;xs:element name="Sensor"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="ID" type="xs:string"/&gt;
+        &lt;xs:element ref="Observation" /&gt;
+      &lt;/xs:sequence&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name="Observation"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="ID" type="xs:string"/&gt;
+        &lt;xs:element ref="Tag" maxOccurs="unbounded" /&gt;
+      &lt;/xs:sequence&gt;
+      &lt;xs:attribute name="Command" type="xs:string" use="required" /&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+
+  &lt;xs:element name="Tag"&gt;
+    &lt;xs:complexType&gt;
+      &lt;xs:sequence&gt;
+        &lt;xs:element name="ID" type="xs:string"/&gt;
+      &lt;/xs:sequence&gt;
+    &lt;/xs:complexType&gt;
+  &lt;/xs:element&gt;
+&lt;/xs:schema&gt;</pre></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepxml_schema"/>G.2. Schema-Provided XML Events</h2></div></div></div><p>
+		   If you have a XSD schema document available for your XML events, Esper can interrogate the schema. The benefits are:
+	   </p><div class="itemizedlist"><ul compact="compact"><li><p>
+					New EPL statements that refer to event properties are validated against the types provided in the schema.
+				</p></li><li><p>
+					Event type metadata becomes available for retrieval as part of the <code class="literal">EventType</code> interface.
+				</p></li></ul></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_schema-start"/>G.2.1. Getting Started</h3></div></div></div><p>
+				The engine reads a XSD schema file from an URL you provide. Make sure files imported by the XSD schema file can also be resolved.
+			</p><p>
+				The configuration accepts a schema URL. This is a sample code snippet to determine a schema URL from a file in classpath:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">URL schemaURL = this.getClass().getClassLoader().getResource("sensor.xsd");
+// For NEsper .NET use C# ResourceManager class for loading resources</pre><p>
+				Here is a sample use of the runtime configuration API, please see <a class="xref" href="configuration.html" title="Chapter 17. Configuration">Chapter 17, <i>Configuration</i></a> for further examples.
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">epService = EPServiceProviderManager.getDefaultProvider();
+ConfigurationEventTypeXMLDOM sensorcfg = new ConfigurationEventTypeXMLDOM();
+sensorcfg.setRootElementName("Sensor");
+sensorcfg.setSchemaResource(schemaURL.toString());
+epService.getEPAdministrator().getConfiguration()
+    .addEventType("SensorEvent", sensorcfg);</pre><p>
+				You must provide a root element name. This name is used to look up the event type for the <code class="literal">sendEvent(org.w3c.Node node)</code> method. An <code class="literal">EventSender</code> is a useful alternative method
+				for sending events if the type lookup based on the root or document element name is not desired.
+			</p><p>
+				After adding the event type, you may create statements and send events. Next is a sample statement:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select ID, Observation.Command, Observation.ID, 
+  Observation.Tag[0].ID, Observation.Tag[1].ID
+from SensorEvent</pre><p>
+				As you can see from the example above, property expressions can query property values held in the XML document's elements and attributes.
+			</p><p>
+				There are multiple ways to obtain a XML DOM document instance from a XML string. The next code snippet shows how to obtain a XML DOM <code class="literal">org.w3c.Document</code> instance:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">InputSource source = new InputSource(new StringReader(xml));
+DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+builderFactory.setNamespaceAware(true);
+Document doc = builderFactory.newDocumentBuilder().parse(source);</pre><p>
+				Send the <code class="literal">org.w3c.Node</code> or <code class="literal">Document</code> object into the engine for processing:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">epService.getEPRuntime().sendEvent(doc);</pre></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_schema-propertyexpr"/>G.2.2. Property Expressions and Namespaces</h3></div></div></div><p>
+				By default, property expressions such as <code class="literal">Observation.Tag[0].ID</code> are evaluated by a fast DOM-walker implementation provided by Esper. This DOM-walker implementation is not namespace-aware.
+			</p><p>
+				Should you require namespace-aware traversal of the DOM document, you must set the <code class="literal">xpath-property-expr</code> configuration option to true (default is false). This flag causes Esper to generate namespace-aware XPath
+				expressions from each property expression instead of the DOM-walker, as described next. Setting the <code class="literal">xpath-property-expr</code> option to true requires that you also configure namespace prefixes as described below.
+			</p><p>
+				When matching up the property names with the XSD schema information, the engine determines whether the attribute or element provides values. The algorithm checks attribute names first followed by element names. It takes the first match to the specified property name.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_schema-propertyexpr-xpath"/>G.2.3. Property Expression to XPath Rewrite</h3></div></div></div><p>
+				By setting the <code class="literal">xpath-property-expr</code> option the engine rewrites each property expression as an XPath expression, effectively handing the evaluation over to the underlying XPath implementation
+				available from classpath. Most JVM have a built-in XPath implementation and there are also optimized, fast implementations such as Jaxen that can be used as well.
+			</p><p>
+				Set the <code class="literal">xpath-property-expr</code> option if you need namespace-aware document traversal, such as when your schema mixes several namespaces and element names are overlapping.
+			</p><p>
+				The below table samples several property expressions and the XPath expression generated for each, without namespace prefixes to keep the example simple:
+			</p><div class="table"><a id="d0e54215"/><p class="title"><b>Table G.1. Property Expression to XPath Expression</b></p><div class="table-contents"><table summary="Property Expression to XPath Expression" border="1"><colgroup><col/><col/></colgroup><thead><tr><th>Property Expression</th><th>Equivalent XPath</th></tr></thead><tbody><tr><td><code class="literal">Observeration.ID</code></td><td><code class="literal">/Sensor/Observation/ID</code></td></tr><tr><td><code class="literal">Observeration.Command</code></td><td><code class="literal">/Sensor/Observation/@Command</code></td></tr><tr><td><code class="literal">Observeration.Tag[0].ID</code></td><td><code class="literal">/Sensor/Observation/Tag[position() = 1]/ID</code></td></tr></tbody></table></div></div><br class="table-break"/><p> 
+				For mapped properties that are specified via the syntax <code class="literal">name('key')</code>, the algorithm looks for an attribute by name <code class="literal">id</code> and generates a XPath expression as <code class="literal">mapped[@id='key']</code>.
+			</p><p> 
+				Finally, here is an example that includes all different types of properties and their XPath expression equivalent in one property expression:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select nested.mapped('key').indexed[1].attribute from MyEvent</pre><p> 
+				The equivalent XPath expression follows, this time including <code class="literal">n0</code> as a sample namespace prefix:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">/n0:rootelement/n0:nested/n0:mapped[@id='key']/n0:indexed[position() = 2]/@attribute</pre></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_schema-propertyarray"/>G.2.4. Array Properties</h3></div></div></div><p>
+				All elements that are unbound or have max occurs greater then 1 in the XSD schema are represented as indexed properties and require an index for resolution.
+			</p><p>
+				For example, the following is not a valid property expression in the sample Sensor document: <code class="literal">Observeration.Tag.ID</code>. As no index is provided for <code class="literal">Tag</code>, the property expression is not valid.
+			</p><p>
+				Repeated elements within a parent element in which the repeated element is a simple type also are represented as an array.
+			</p><p>
+				Consider the next XML document:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">&lt;item&gt;
+&lt;book sku="8800090"&gt;
+&lt;author&gt;Isaac Asimov&lt;/author&gt;
+&lt;author&gt;Robert A Heinlein&lt;/author&gt;
+&lt;/book&gt;
+&lt;/item&gt;</pre><p>
+				Here, the result of the expression <code class="literal">book.author</code> is an array of type String and the result of <code class="literal">book.author[0]</code> is a String value.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_schema-propertydynamic"/>G.2.5. Dynamic Properties</h3></div></div></div><p>
+				  Dynamic properties are not validated against the XSD schema information and their result value is always <code class="literal">org.w3c.Node</code>. You may use a user-defined function to process dynamic properties returning <code class="literal">Node</code>. As an alternative consider using an explicit property.
+			</p><p>
+				An example dynamic property is <code class="literal">Origin?.ID</code> which will look for an element by name <code class="literal">Origin</code> that contains an element or attribute node by name <code class="literal">LocationCode</code>:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select Origin?.LocationCode from SensorEvent</pre></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_schema-propertytranspose"/>G.2.6. Transposing Properties</h3></div></div></div><p>
+				When providing a XSD document, the default configuration allows to transpose property values that are themselves complex elements, as defined in the XSD schema, into a new stream. This behavior can be controlled via the flag <code class="literal">auto-fragment</code>.
+			</p><p>
+				For example, consider the next query:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">insert into ObservationStream
+select ID, Observation from SensorEvent</pre><p>
+				The <code class="literal">Observation</code> as a property of the <code class="literal">SensorEvent</code> gets itself inserted into a new stream by name <code class="literal">ObservationStream</code>. The <code class="literal">ObservationStream</code>
+				thus consists of a string-typed <code class="literal">ID</code> property and a complex-typed property named <code class="literal">Observation</code>, as described in the schema.
+			</p><p>
+				A further statement can use this stream to query:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select Observation.Command, Observation.Tag[0].ID from ObservationStream</pre><p>
+				Before continuing the discussion, here is an alternative syntax using the wildcard-select, that is also useful:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">insert into TagListStream
+select ID as sensorId, Observation.* from SensorEvent</pre><p>
+				The new <code class="literal">TagListStream</code> has a string-typed <code class="literal">ID</code> and <code class="literal">Command</code> property as well as an array of <code class="literal">Tag</code> properties that are complex types themselves as defined in the schema.
+			</p><p>
+				Next is a sample statement to query the new stream:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select sensorId, Command, Tag[0].ID from TagListStream</pre><p>
+				Please note the following limitations:
+			</p><div class="itemizedlist"><ul compact="compact"><li><p>
+						The XPath standard prescribes that XPath expressions against <code class="literal">org.w3c.Node</code> are evaluated against the owner document of the <code class="literal">Node</code>. Therefore XPath is not relative to the current node but absolute against each node's owner document. Since Esper does not create new document instances for transposed nodes, transposing properties is not possible when the <code class="literal">xpath-property-expr</code> flag is set.
+					</p></li><li><p>
+						Complex elements that have both simple element values and complex child elements are not transposed. This is to ensure their property value is not hidden. Use an explicit XPath expression to transpose such properties.
+					</p></li></ul></div><p>
+				Esper automatically registers a new event type for transposed properties. It generates the type name of the new XML event type from the XML event type name and the property names used in the expression. The synposis is <span class="emphasis"><em>type_name.property_name[.property_name...]</em></span>. The type name can be looked up, for example for use with <code class="literal">EventSender</code> or can be created in advance.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_eventsender"/>G.2.7. Event Sender</h3></div></div></div><p>
+				An <code class="literal">EventSender</code> sends events into the engine for a given type, saving a type lookup based on element name.
+			</p><p>
+				This brief example sends an event via <code class="literal">EventSender</code>:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">EventSender sender = epRuntime.getEventSender("SensorEvent");
+sender.sendEvent(node);</pre><p>
+				The XML DOM event sender checks the root element name before processing the event. Use the <code class="literal">event-sender-validates-root</code> setting to disable validation. This forces the engine to process XML documents according to any predefined type without validation of the root element name.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_limitations"/>G.2.8. Limitations</h3></div></div></div><p>
+			   The engine schema interrogation is based on the Xerces distribution packaged into Sun Java runtimes. Your application may not replace the JRE's Xerces version and use XML schemas, unless your application sets the DOM implementation registry as shown below before loading the engine configuration:
+		   </p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">System.setProperty(DOMImplementationRegistry.PROPERTY, 
+"com.sun.org.apache.xerces.internal.dom.DOMXSImplementationSourceImpl");</pre></div></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepxml_noschema"/>G.3. No-Schema-Provided XML Events</h2></div></div></div><p>
+		   Without a schema document a XML event may still be queried. However there are important differences in the metadata available without a schema document and therefore the property expression results. These differences are outlined below.
+	   </p><p>
+			All property expressions against a XML type without schema are assumed valid. There is no validation of the property expression other than syntax validation. At runtime, property expressions return string-type values or <code class="literal">null</code> if the expression did not
+			yield a matching element or attribute result.
+		</p><p>
+			When asked for property names or property metadata, a no-schema type returns empty array.
+		</p><p>
+			In all other aspects the type behaves the same as the schema-provided type described earlier.
+		</p></div><div class="sect1" lang="en-US"><div class="titlepage"><div><div><h2 class="title"><a id="appendix_eventrepxml_explicit"/>G.4. Explicitly-Configured Properties</h2></div></div></div><p>
+		 Regardless of whether or not you provide a XSD schema for the XML event type, you can always fall back to configuring explicit properties that are backed by XPath expressions.
+	   </p><p>
+		 For further documentation on XPath, please consult the XPath standard or other online material. Consider using Jaxen or Apache Axiom, for example, to provide faster XPath evaluation then your Java VM built-in XPath provider may offer.
+	   </p><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_explicit-simple"/>G.4.1. Simple Explicit Property</h3></div></div></div><p>
+				Shown below is an example configuration that adds an explicit property backed by a XPath expression and that defines namespace prefixes:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">epService = EPServiceProviderManager.getDefaultProvider();
+ConfigurationEventTypeXMLDOM sensorcfg = new ConfigurationEventTypeXMLDOM();
+sensorcfg.addXPathProperty("countTags", "count(/ss:Sensor/ss:Observation/ss:Tag)", 
+    XPathConstants.NUMBER);
+sensorcfg.addNamespacePrefix("ss", "SensorSchema");
+sensorcfg.setRootElementName("Sensor");
+epService.getEPAdministrator().getConfiguration()
+    .addEventType("SensorEvent", sensorcfg);</pre><p>
+				The <code class="literal">countTags</code> property is now available for querying:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select countTags from SensorEvent</pre><p>
+				The XPath expression <code class="literal">count(...)</code> is a XPath built-in function that counts the number of nodes, for the example document the result is <code class="literal">2</code>.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_explicit-casted"/>G.4.2. Explicit Property Casting and Parsing</h3></div></div></div><p>
+				Esper can parse or cast the result of your XPath expression to the desired type. Your property configuration provides the type to cast to, like this:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">sensorcfg.addXPathProperty("countTags", "count(/ss:Sensor/ss:Observation/ss:Tag)", 
+    XPathConstants.NUMBER, "int");</pre><p>
+				The type supplied to the property configuration must be one of the built-in types. Arrays of built-in type are also possible, requiring the <code class="literal">XPathConstants.NODESET</code> type returned by your XPath expression, as follows:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">sensorcfg.addXPathProperty("idarray", "//ss:Tag/ss:ID", 
+    XPathConstants.NODESET, "String[]");</pre><p>
+				The XPath expression <code class="literal">//ss:Tag/ss:ID</code> returns all ID nodes under a Tag node, regardless of where in the node tree the element is located. For the example document the result is <code class="literal">2</code> array elements <code class="literal">urn:epc:1:2.24.400</code> and <code class="literal">urn:epc:1:2.24.40</code>.
+			</p></div><div class="sect2" lang="en-US"><div class="titlepage"><div><div><h3 class="title"><a id="appendix_eventrepxml_explicit-node"/>G.4.3. Node and Nodeset Explicit Property</h3></div></div></div><p>
+				An explicit property may return <code class="literal">XPathConstants.NODE</code> or <code class="literal">XPathConstants.NODESET</code> and can provide the event type name of a pre-configured event type for the property. The method name to add such properties is <code class="literal">addXPathPropertyFragment</code>.
+			</p><p>
+				This code snippet adds two explicit properties and assigns an event type name for each property:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">sensorcfg.addXPathPropertyFragment("tagOne", "//ss:Tag[position() = 1]", 
+    XPathConstants.NODE, "TagEvent");
+sensorcfg.addXPathPropertyFragment("tagArray", "//ss:Tag", 
+    XPathConstants.NODESET, "TagEvent");</pre><p>
+				The configuration above references the <code class="literal">TagEvent</code> event type. This type must also be configured. Prefix the root element name with "//" to cause the lookup to search the nested schema elements for the definition of the type:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">ConfigurationEventTypeXMLDOM tagcfg = new ConfigurationEventTypeXMLDOM();
+tagcfg.setRootElementName("//Tag");
+tagcfg.setSchemaResource(schemaURL);
+epAdministrator.getConfiguration()
+    .addEventType("TagEvent", tagcfg);</pre><p>
+				The <code class="literal">tagOne</code> and <code class="literal">tagArray</code> properties are now ready for selection and transposing to further streams:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">insert into TagOneStream select tagOne.* from SensorEvent</pre><p>
+				Select from the new stream:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select ID from TagOneStream</pre><p>
+				An example with indexed properties is shown next:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">insert into TagArrayStream select tagArray as mytags from SensorEvent</pre><p>
+				Select from the new stream:
+			</p><pre xmlns="" xmlns:d="http://docbook.org/ns/docbook" xmlns:rf="java:org.jboss.highlight.XhtmlRendererFactory" class="">select mytags[0].ID from TagArrayStream</pre></div></div></div><ul xmlns:d="http://docbook.org/ns/docbook" class="docnav"><li class="previous"><a accesskey="p" href="appendix_eventrepavro.html"><strong>Prev</strong>Appendix F. Event Representation: Avro Events (or...</a></li><li class="up"><a accesskey="u" href="#"><strong>Top of page</strong></a></li><li class="home"><a accesskey="h" href="index.html"><strong>Front page</strong></a></li><li class="next"><a accesskey="n" href="appendix_dotnet.html"><strong>Next</strong>Appendix H. NEsper .NET -Specific Information</a></li></ul></body></html>

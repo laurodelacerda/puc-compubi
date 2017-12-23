@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on Thu 23 Nov 2017 05:24:45 PM BRST by Netedit Version 0.30.0
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="competicao.net.xml"/>
+    </input>
+
+    <output>
+        <output-file value="competicao.net.xml"/>
+    </output>
+
+    <processing>
+        <no-turnarounds value="true"/>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="false"/>
+        <junctions.corner-detail value="0"/>
+        <rectangular-lane-cut value="false"/>
+    </processing>
+
+    <random_number>
+        <random value="true"/>
+    </random_number>
+
+</configuration>
+-->
+
+<net version="0.27" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="0.00,0.00" convBoundary="0.00,0.00,2000.00,0.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+
+    <edge id=":jSta_0" function="internal">
+        <lane id=":jSta_0_0" index="0" allow="bicycle" speed="13.89" length="0.10" shape="200.00,-8.25 200.00,-8.25"/>
+        <lane id=":jSta_0_1" index="1" allow="bicycle" speed="13.89" length="0.10" shape="200.00,-4.95 200.00,-4.95"/>
+        <lane id=":jSta_0_2" index="2" allow="bicycle" speed="13.89" length="0.10" shape="200.00,-1.65 200.00,-1.65"/>
+    </edge>
+
+    <edge id="beg" from="jBeg" to="jSta" priority="1">
+        <lane id="beg_0" index="0" allow="bicycle" speed="13.89" length="200.00" shape="0.00,-8.25 200.00,-8.25"/>
+        <lane id="beg_1" index="1" allow="bicycle" speed="13.89" length="200.00" shape="0.00,-4.95 200.00,-4.95"/>
+        <lane id="beg_2" index="2" allow="bicycle" speed="13.89" length="200.00" shape="0.00,-1.65 200.00,-1.65"/>
+    </edge>
+    <edge id="end" from="jSta" to="jEnd" priority="1">
+        <lane id="end_0" index="0" allow="bicycle" speed="13.89" length="1800.00" shape="200.00,-8.25 2000.00,-8.25"/>
+        <lane id="end_1" index="1" allow="bicycle" speed="13.89" length="1800.00" shape="200.00,-4.95 2000.00,-4.95"/>
+        <lane id="end_2" index="2" allow="bicycle" speed="13.89" length="1800.00" shape="200.00,-1.65 2000.00,-1.65"/>
+    </edge>
+
+    <tlLogic id="jSta" type="static" programID="0" offset="0">
+        <phase duration="100" state="rrr"/>
+        <phase duration="1000" state="GGG"/>
+    </tlLogic>
+
+    <junction id="jBeg" type="dead_end" x="0.00" y="0.00" incLanes="" intLanes="" shape="0.00,-0.05 0.00,-9.85"/>
+    <junction id="jEnd" type="dead_end" x="2000.00" y="0.00" incLanes="end_0 end_1 end_2" intLanes="" shape="2000.00,-9.85 2000.00,-0.05"/>
+    <junction id="jSta" type="traffic_light" x="200.00" y="0.00" incLanes="beg_0 beg_1 beg_2" intLanes=":jSta_0_0 :jSta_0_1 :jSta_0_2" shape="200.00,-0.05 200.00,-9.85 200.00,-0.05">
+        <request index="0" response="000" foes="000" cont="0"/>
+        <request index="1" response="000" foes="000" cont="0"/>
+        <request index="2" response="000" foes="000" cont="0"/>
+    </junction>
+
+    <connection from="beg" to="end" fromLane="0" toLane="0" via=":jSta_0_0" tl="jSta" linkIndex="0" dir="s" state="o"/>
+    <connection from="beg" to="end" fromLane="1" toLane="1" via=":jSta_0_1" tl="jSta" linkIndex="1" dir="s" state="o"/>
+    <connection from="beg" to="end" fromLane="2" toLane="2" via=":jSta_0_2" tl="jSta" linkIndex="2" dir="s" state="o"/>
+
+    <connection from=":jSta_0" to="end" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":jSta_0" to="end" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":jSta_0" to="end" fromLane="2" toLane="2" dir="s" state="M"/>
+
+</net>

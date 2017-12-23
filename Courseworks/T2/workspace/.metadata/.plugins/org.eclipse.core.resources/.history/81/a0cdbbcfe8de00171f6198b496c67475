@@ -1,0 +1,10 @@
+
+public class RunnerCoord {
+    public final double latitude;
+    public final double longitude;
+
+    public RunnerCoord(double lat, double lon) {
+        latitude = lat;
+        longitude = lon;
+    }
+}
